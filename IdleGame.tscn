@@ -1,0 +1,198 @@
+[gd_scene load_steps=2 format=3 uid="uid://dvinn21r62hrd"]
+
+[ext_resource type="Script" uid="uid://o16g47nw7251" path="res://node.gd" id="1_scn35"]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="CharlieCircus" type="Node" parent="."]
+script = ExtResource("1_scn35")
+
+[node name="UI" type="CanvasLayer" parent="CharlieCircus"]
+
+[node name="CharlieArea" type="Panel" parent="CharlieCircus/UI"]
+custom_minimum_size = Vector2(400, 400)
+offset_left = 20.0
+offset_top = 100.0
+offset_right = 60.0
+offset_bottom = 140.0
+
+[node name="ColorRect" type="ColorRect" parent="CharlieCircus/UI/CharlieArea"]
+layout_mode = 0
+offset_left = 50.0
+offset_top = 50.0
+offset_right = 350.0
+offset_bottom = 350.0
+color = Color(1, 1, 1, 0.937255)
+
+[node name="TopBar" type="HBoxContainer" parent="CharlieCircus/UI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -152.0
+offset_bottom = -568.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MoneyLabel" type="Label" parent="CharlieCircus/UI/TopBar"]
+layout_mode = 2
+text = "Money: $10.00"
+
+[node name="CaloriesLabel" type="Label" parent="CharlieCircus/UI/TopBar"]
+layout_mode = 2
+text = "Calories: 0"
+
+[node name="AudienceLabel" type="Label" parent="CharlieCircus/UI/TopBar"]
+layout_mode = 2
+text = "Audience: 5"
+
+[node name="RightPanel" type="Panel" parent="CharlieCircus/UI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 440.0
+offset_top = 100.0
+offset_right = -23.0
+offset_bottom = -147.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TabContainer" type="TabContainer" parent="CharlieCircus/UI/RightPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+current_tab = 3
+
+[node name="Inventory" type="TabBar" parent="CharlieCircus/UI/RightPanel/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CharlieCircus/UI/RightPanel/TabContainer/Inventory"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CharlieCircus/UI/RightPanel/TabContainer/Inventory/ScrollContainer"]
+layout_mode = 2
+
+[node name="Tricks" type="TabBar" parent="CharlieCircus/UI/RightPanel/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CharlieCircus/UI/RightPanel/TabContainer/Tricks"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -2.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CharlieCircus/UI/RightPanel/TabContainer/Tricks/ScrollContainer"]
+layout_mode = 2
+
+[node name="Shop" type="TabBar" parent="CharlieCircus/UI/RightPanel/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CharlieCircus/UI/RightPanel/TabContainer/Shop"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.995
+offset_bottom = -0.155029
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CharlieCircus/UI/RightPanel/TabContainer/Shop/ScrollContainer"]
+layout_mode = 2
+
+[node name="Hire" type="TabBar" parent="CharlieCircus/UI/RightPanel/TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CharlieCircus/UI/RightPanel/TabContainer/Hire"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.998
+anchor_bottom = 0.995
+offset_right = 0.119995
+offset_bottom = -0.155029
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CharlieCircus/UI/RightPanel/TabContainer/Hire/ScrollContainer"]
+layout_mode = 2
+
+[node name="CharlieFeedback" type="Label" parent="CharlieCircus/UI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 69.0
+offset_top = 455.0
+offset_right = -773.0
+offset_bottom = -155.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CharlieCircus/UI"]
+offset_left = 20.0
+offset_top = 570.0
+offset_right = 214.0
+offset_bottom = 610.0
+
+[node name="SaveButton" type="Button" parent="CharlieCircus/UI/HBoxContainer"]
+layout_mode = 2
+text = "Save Game"
+
+[node name="LoadButton" type="Button" parent="CharlieCircus/UI/HBoxContainer"]
+layout_mode = 2
+text = "Load Game"
+
+[node name="EnergyBar" type="ProgressBar" parent="CharlieCircus/UI"]
+offset_left = 20.0
+offset_top = 510.0
+offset_right = 420.0
+offset_bottom = 537.0
+show_percentage = false
+
+[node name="Label" type="Label" parent="CharlieCircus/UI/EnergyBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 145.0
+offset_top = 2.0
+offset_right = -132.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Energy: 100/100"
+
+[node name="ActionBar" type="ProgressBar" parent="CharlieCircus/UI"]
+offset_left = 20.0
+offset_top = 540.0
+offset_right = 420.0
+offset_bottom = 567.0
+show_percentage = false
+
+[node name="Label" type="Label" parent="CharlieCircus/UI/ActionBar"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 116.0
+offset_top = 2.0
+offset_right = -110.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
