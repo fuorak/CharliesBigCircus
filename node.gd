@@ -1,7 +1,7 @@
 extends Node
 
 # Player Resources
-var money = 10.0  # Start with a small amount to buy first food
+var money = 100.0  # Start with a small amount to buy first food
 var calories = 0.0
 var audience_size = 5  # Start with a small audience
 
@@ -20,29 +20,36 @@ var food_inventory = {
 		"name": "Basic Cat Food",
 		"count": 0,
 		"calories": 1.0,
-		"cost": 0.0,
+		"cost": 0,
 		"description": "Basic cat food. Free but not very nutritious."
 	},
 	"dog_food": {
 		"name": "Dog Food",
 		"count": 0,
 		"calories": 2.0,
-		"cost": 1.0,
+		"cost": 1,
 		"description": "Charlie loves dog food! Gives more calories than basic food."
 	},
 	"tuna": {
 		"name": "Tuna",
 		"count": 0,
 		"calories": 5.0,
-		"cost": 3.0,
+		"cost": 3,
 		"description": "Fancy salmon bits. Very nutritious!"
 	},
 	"salmon": {
 		"name": "Salmon",
 		"count": 0, 
 		"calories": 10.0,
-		"cost": 7.0,
+		"cost": 7,
 		"description": "The finest cat cuisine. Extremely calorie-rich."
+	},
+	"door": {
+		"name": "A Door",
+		"count": 0,
+		"calories": 5000.0,
+		"cost": 346,
+		"description": "Charlie! You can't eat a door!"
 	}
 }
 
@@ -52,42 +59,53 @@ var tricks = {
 		"name": "Sit",
 		"unlocked": true,  # Start with this trick
 		"calorie_cost": 1.0,
-		"energy_cost": 10.0,
+		"energy_cost": 1.0,
 		"duration": 1.0,  # Seconds to perform
-		"money_reward": 1.0,
+		"money_reward": 2.0,
 		"audience_gain": 0.01,
 		"description": "Charlie sits on command. Basic but cute!"
+	},
+	"beg": {
+		"name": "Beg",
+		"unlocked": false,
+		"unlock_cost": 10,
+		"calorie_cost": 2.0,
+		"energy_cost": 1.0,
+		"duration": 2.0,
+		"money_reward": 4.0,
+		"audience_gain": 0.05,
+		"description": "Charlie sits up, and paws at what he wants. A classic."
 	},
 	"roll_over": {
 		"name": "Roll Over",
 		"unlocked": false,
-		"unlock_cost": 25.0,
+		"unlock_cost": 25,
 		"calorie_cost": 3.0,
-		"energy_cost": 20.0,
+		"energy_cost": 2.0,
 		"duration": 3.0,
-		"money_reward": 3.0,
+		"money_reward": 8.0,
 		"audience_gain": 0.03,
 		"description": "Charlie rolls over. Adorable!"
 	},
 	"jump": {
 		"name": "Jump Through Hoop",
 		"unlocked": false,
-		"unlock_cost": 100.0,
+		"unlock_cost": 100,
 		"calorie_cost": 8.0,
-		"energy_cost": 30.0,
+		"energy_cost": 3.0,
 		"duration": 4.0,
-		"money_reward": 10.0,
+		"money_reward": 20.0,
 		"audience_gain": 0.07,
 		"description": "Charlie jumps through a small hoop. Impressive!"
 	},
 	"balance": {
 		"name": "Balance Act",
 		"unlocked": false,
-		"unlock_cost": 500.0,
+		"unlock_cost": 500,
 		"calorie_cost": 15.0,
-		"energy_cost": 50.0,
+		"energy_cost": 5.0,
 		"duration": 6.0,
-		"money_reward": 25.0,
+		"money_reward": 50.0,
 		"audience_gain": .15,
 		"description": "Charlie balances on a ball. The crowd goes wild!"
 	}
@@ -120,8 +138,18 @@ var employees = {
 	}
 }
 
-# Special Items (we'll implement these later)
-var special_items = {}
+# Special Items
+var special_items = {
+	"food_bowl": {
+		"name": "Fancy Food Bowl",
+		"count": 0,
+		"current_cost": 100,
+		"base_cost": 100.0,
+		"scale": 12,
+		"description": "Makes Charlie eat twice as fast! (Stacks with multiple bowls)",
+		"effect": "half_eating_time"
+	}
+}
 
 # Current selected food
 var selected_food = "cat_food"
@@ -231,6 +259,13 @@ func update_action_bar():
 func initialize_inventory_tab():
 	var inventory_container = tab_container.get_node("Inventory/ScrollContainer/VBoxContainer")
 	
+	# Add Food section label
+	var food_label = Label.new()
+	food_label.text = "--- FOOD ---"
+	food_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	food_label.add_theme_color_override("font_color", Color(0.2, 0.6, 1.0))
+	inventory_container.add_child(food_label)
+	
 	# Create buttons for each food type
 	for food_id in food_inventory:
 		var food = food_inventory[food_id]
@@ -246,6 +281,37 @@ func initialize_inventory_tab():
 		label.text = "Count: " + str(food["count"]) + " | Calories: " + str(food["calories"])
 		
 		hbox.add_child(button)
+		hbox.add_child(label)
+		inventory_container.add_child(hbox)
+	
+	# Add a spacer
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 20)
+	inventory_container.add_child(spacer)
+	
+	# Add Items section label
+	var items_label = Label.new()
+	items_label.text = "--- ITEMS ---"
+	items_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	items_label.add_theme_color_override("font_color", Color(0.2, 0.6, 1.0))
+	inventory_container.add_child(items_label)
+	
+	# Create entries for special items
+	for item_id in special_items:
+		var item = special_items[item_id]
+		
+		var hbox = HBoxContainer.new()
+		var label = Label.new()
+		
+		# Format text with count and description
+		var item_text = item["name"] + " (x" + str(item["count"]) + ")"
+		label.text = item_text + " | " + item["description"]
+		
+		# Add some left padding for better readability
+		var padding = Control.new()
+		padding.custom_minimum_size = Vector2(10, 0)
+		hbox.add_child(padding)
+		
 		hbox.add_child(label)
 		inventory_container.add_child(hbox)
 
@@ -281,6 +347,13 @@ func initialize_tricks_tab():
 func initialize_shop_tab():
 	var shop_container = tab_container.get_node("Shop/ScrollContainer/VBoxContainer")
 	
+	# Add Food section label
+	var food_label = Label.new()
+	food_label.text = "--- FOOD ---"
+	food_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	food_label.add_theme_color_override("font_color", Color(0.2, 0.6, 1.0))
+	shop_container.add_child(food_label)
+	
 	# Create purchase buttons for each food type
 	for food_id in food_inventory:
 		var food = food_inventory[food_id]
@@ -299,6 +372,36 @@ func initialize_shop_tab():
 			hbox.add_child(button)
 			hbox.add_child(label)
 			shop_container.add_child(hbox)
+	
+	# Add a spacer
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 20)
+	shop_container.add_child(spacer)
+	
+	# Add Items section label
+	var items_label = Label.new()
+	items_label.text = "--- ITEMS ---"
+	items_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	items_label.add_theme_color_override("font_color", Color(0.2, 0.6, 1.0))
+	shop_container.add_child(items_label)
+	
+	# Create purchase buttons for special items
+	for item_id in special_items:
+		var item = special_items[item_id]
+		
+		var hbox = HBoxContainer.new()
+		var button = Button.new()
+		var label = Label.new()
+		
+		button.text = "Buy: " + item["name"]
+		button.pressed.connect(func(): buy_special_item(item_id))
+		button.custom_minimum_size = Vector2(150, 40)
+		
+		label.text = "Cost: $" + str(item["current_cost"]) + " | " + item["description"]
+		
+		hbox.add_child(button)
+		hbox.add_child(label)
+		shop_container.add_child(hbox)
 
 func initialize_hire_tab():
 	var hire_container = tab_container.get_node("Hire/ScrollContainer/VBoxContainer")
@@ -324,9 +427,13 @@ func initialize_hire_tab():
 func update_inventory_tab():
 	var inventory_container = tab_container.get_node("Inventory/ScrollContainer/VBoxContainer")
 	
+	# Skip the section headers (indexes 0, 2, and 4)
+	var food_start_idx = 1
+	var food_count = food_inventory.size()
+	
 	# Update each food item display
-	for i in range(inventory_container.get_child_count()):
-		var hbox = inventory_container.get_child(i)
+	for i in range(food_count):
+		var hbox = inventory_container.get_child(food_start_idx + i)
 		var button = hbox.get_child(0)
 		var label = hbox.get_child(1)
 		var food_id = food_inventory.keys()[i]
@@ -342,6 +449,19 @@ func update_inventory_tab():
 			button.add_theme_color_override("font_color", Color(1, 0.8, 0.2))
 		else:
 			button.remove_theme_color_override("font_color")
+	
+	# Update special items (after the food section, section header, and spacer)
+	var items_start_idx = food_start_idx + food_count + 2
+	
+	for i in range(special_items.size()):
+		var hbox = inventory_container.get_child(items_start_idx + i)
+		var label = hbox.get_child(1) # index 0 is now the padding
+		var item_id = special_items.keys()[i]
+		var item = special_items[item_id]
+		
+		# Update label text
+		var item_text = item["name"] + " (x" + str(item["count"]) + ")"
+		label.text = item_text + " | " + item["description"]
 
 func update_tricks_tab():
 	var tricks_container = tab_container.get_node("Tricks/ScrollContainer/VBoxContainer")
@@ -365,22 +485,53 @@ func update_tricks_tab():
 func update_shop_tab():
 	var shop_container = tab_container.get_node("Shop/ScrollContainer/VBoxContainer")
 	
-	# Update each shop item
-	for i in range(shop_container.get_child_count()):
-		var hbox = shop_container.get_child(i)
+	# Calculate starting indices for each section
+	var food_section_label_idx = 0
+	var purchasable_foods = []
+	for food_id in food_inventory:
+		if food_inventory[food_id]["cost"] > 0:
+			purchasable_foods.append(food_id)
+	
+	# Update food items
+	for i in range(purchasable_foods.size()):
+		var hbox = shop_container.get_child(food_section_label_idx + 1 + i)
 		var button = hbox.get_child(0)
-		
-		# Get the corresponding food ID (adjusted for only showing purchasable foods)
-		var purchasable_foods = []
-		for food_id in food_inventory:
-			if food_inventory[food_id]["cost"] > 0:
-				purchasable_foods.append(food_id)
-		
 		var food_id = purchasable_foods[i]
-		var food = food_inventory[food_id]
 		
 		# Disable button if not enough money
-		button.disabled = money < food["cost"]
+		button.disabled = money < food_inventory[food_id]["cost"]
+	
+	# Calculate items section start (after food section, spacer, and section header)
+	var items_section_start = food_section_label_idx + 1 + purchasable_foods.size() + 2
+	
+	# Update items
+	for i in range(special_items.size()):
+		var hbox = shop_container.get_child(items_section_start + i)
+		var button = hbox.get_child(0)
+		var label = hbox.get_child(1)
+		var item_id = special_items.keys()[i]
+		
+		label.text = "Cost: $" + str(special_items[item_id]["current_cost"]) + " | " + special_items[item_id]["description"]
+		
+		# Disable button if not enough money
+		button.disabled = money < special_items[item_id]["current_cost"]
+
+func buy_special_item(item_id):
+	var item = special_items[item_id]
+	
+	if money >= item["current_cost"]:
+		money -= item["current_cost"]
+		item["count"] += 1
+		
+		item["current_cost"] = item["current_cost"] * item["scale"]
+		
+		# Show feedback
+		$UI/CharlieFeedback.text = "Bought " + item["name"] + "!"
+		$UI/CharlieFeedback.visible = true
+		await get_tree().create_timer(1.0).timeout
+		$UI/CharlieFeedback.visible = false
+		
+		update_ui()
 
 func update_hire_tab():
 	var hire_container = tab_container.get_node("Hire/ScrollContainer/VBoxContainer")
@@ -471,8 +622,19 @@ func feed_charlie():
 	var food = food_inventory[selected_food]
 	
 	if selected_food == "cat_food" or food["count"] > 0:
+		# Determine eating duration - scales with number of food bowls
+		var eating_duration = 0.5  # Default eating time
+		var bowl_count = special_items["food_bowl"]["count"]
+		
+		if bowl_count > 0:
+			# Each bowl halves the eating time: 0.5, 0.25, 0.125, etc.
+			eating_duration = eating_duration / pow(2, bowl_count)
+			
+			# Set a minimum eating time to prevent it from becoming too small
+			eating_duration = max(eating_duration, 0.05)
+		
 		# Start the eating action - if it returns false, an action is already in progress
-		if not start_action("eating", 0.5):  # Eating takes 0.5 seconds
+		if not start_action("eating", eating_duration):
 			return
 			
 		# Apply the effects immediately
@@ -662,6 +824,7 @@ func save_game():
 		"food_inventory": food_inventory,
 		"tricks": tricks,
 		"employees": employees,
+		"special_items": special_items,
 		"selected_food": selected_food,
 		# Don't save action state since it will reset on load anyway
 	}
@@ -687,6 +850,11 @@ func load_game():
 			food_inventory = save_data["food_inventory"]
 			tricks = save_data["tricks"]
 			employees = save_data["employees"]
+			
+			# Load special items if they exist in the save file
+			if "special_items" in save_data:
+				special_items = save_data["special_items"]
+			
 			selected_food = save_data["selected_food"]
 			
 			# Reset action state
