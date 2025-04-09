@@ -63,7 +63,8 @@ var tricks = {
 		"duration": 1.0,  # Seconds to perform
 		"money_reward": 2.0,
 		"audience_gain": 0.01,
-		"description": "Charlie sits on command. Basic but cute!"
+		"description": "Charlie sits on command. Basic but cute!",
+		"visible": true
 	},
 	"beg": {
 		"name": "Beg",
@@ -74,7 +75,8 @@ var tricks = {
 		"duration": 2.0,
 		"money_reward": 4.0,
 		"audience_gain": 0.05,
-		"description": "Charlie sits up, and paws at what he wants. A classic."
+		"description": "Charlie sits up, and paws at what he wants. A classic.",
+		"visible": true
 	},
 	"roll_over": {
 		"name": "Roll Over",
@@ -85,10 +87,11 @@ var tricks = {
 		"duration": 3.0,
 		"money_reward": 8.0,
 		"audience_gain": 0.03,
-		"description": "Charlie rolls over. Adorable!"
+		"description": "Charlie rolls over. Adorable!",
+		"visible": false
 	},
 	"jump": {
-		"name": "Jump Through Hoop",
+		"name": "Jump",
 		"unlocked": false,
 		"unlock_cost": 100,
 		"calorie_cost": 8.0,
@@ -96,7 +99,8 @@ var tricks = {
 		"duration": 4.0,
 		"money_reward": 20.0,
 		"audience_gain": 0.07,
-		"description": "Charlie jumps through a small hoop. Impressive!"
+		"description": "Charlie jumps through a small hoop. Impressive!",
+		"visible": false
 	},
 	"balance": {
 		"name": "Balance Act",
@@ -107,7 +111,8 @@ var tricks = {
 		"duration": 6.0,
 		"money_reward": 50.0,
 		"audience_gain": .15,
-		"description": "Charlie balances on a ball. The crowd goes wild!"
+		"description": "Charlie balances on a ball. The crowd goes wild!",
+		"visible": false
 	}
 }
 
@@ -147,7 +152,8 @@ var special_items = {
 		"base_cost": 100.0,
 		"scale": 12,
 		"description": "Makes Charlie eat twice as fast! (Stacks with multiple bowls)",
-		"effect": "half_eating_time"
+		"effect": "half_eating_time",
+		"visible": true
 	}
 }
 
@@ -322,27 +328,30 @@ func initialize_tricks_tab():
 	for trick_id in tricks:
 		var trick = tricks[trick_id]
 		
-		var hbox = HBoxContainer.new()
-		var button = Button.new()
-		var label = Label.new()
-		
-		if trick["unlocked"]:
-			button.text = "Perform: " + trick["name"]
-			button.pressed.connect(func(): perform_trick(trick_id))
-		else:
-			button.text = "Unlock: " + trick["name"] + " ($" + str(trick["unlock_cost"]) + ")"
-			button.pressed.connect(func(): unlock_trick(trick_id))
-		
-		button.custom_minimum_size = Vector2(200, 40)
-		
-		if trick["unlocked"]:
-			label.text = "Cost: " + str(trick["calorie_cost"]) + " cal, " + str(trick["energy_cost"]) + " energy | Reward: $" + str(trick["money_reward"])
-		else:
-			label.text = trick["description"]
-		
-		hbox.add_child(button)
-		hbox.add_child(label)
-		tricks_container.add_child(hbox)
+		if trick["visible"]:
+			var hbox = HBoxContainer.new()
+			var button = Button.new()
+			var label = Label.new()
+			
+			label.add_theme_font_size_override("font_size", 14)
+			
+			if trick["unlocked"]:
+				button.text = "Perform: " + trick["name"]
+				button.pressed.connect(func(): perform_trick(trick_id))
+			else:
+				button.text = "Unlock: " + trick["name"] + " ($" + str(trick["unlock_cost"]) + ")"
+				button.pressed.connect(func(): unlock_trick(trick_id))
+			
+			button.custom_minimum_size = Vector2(250, 40)
+			
+			if trick["unlocked"]:
+				label.text = "Cost: " + str(trick["calorie_cost"]) + " cal, " + str(trick["energy_cost"]) + " energy | Reward: $" + str(trick["money_reward"])
+			else:
+				label.text = trick["description"]
+			
+			hbox.add_child(button)
+			hbox.add_child(label)
+			tricks_container.add_child(hbox)
 
 func initialize_shop_tab():
 	var shop_container = tab_container.get_node("Shop/ScrollContainer/VBoxContainer")
@@ -743,7 +752,7 @@ func complete_action():
 		apply_trick_rewards(trick_id)
 		
 		# Show success feedback
-		$UI/CharlieFeedback.text = "Amazing trick!"
+		$UI/CharlieFeedback.text = "Purfect trick!"
 		$UI/CharlieFeedback.visible = true
 		await get_tree().create_timer(1.0).timeout
 		$UI/CharlieFeedback.visible = false
@@ -772,6 +781,16 @@ func unlock_trick(trick_id):
 		for child in tricks_container.get_children():
 			tricks_container.remove_child(child)
 			child.queue_free()
+		
+		#Make the next trick visible
+		var trick_keys = tricks.keys()
+		var current_index = trick_keys.find(trick_id)
+		var next_index = current_index + 1
+		
+		# Check if there's a next trick to make visible
+		if next_index < trick_keys.size():
+			var next_trick_id = trick_keys[next_index]
+			tricks[next_trick_id]["visible"] = true
 		
 		# Rebuild the tricks tab
 		initialize_tricks_tab()
